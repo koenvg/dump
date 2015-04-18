@@ -1,0 +1,96 @@
+{# ------------------------------------------------------- #}
+{# ONE OFF VIEW contact #}
+{# This page can use any data from http:localhost:2000/cms/#/form/contact/ #}
+{# Webhook uses the SWIG.js (like Djagno/Twig) templating system. Their documentation is here: #}
+{# http://paularmstrong.github.io/swig/docs/tags/ #}
+{# Learn about calling data into Webhook pages here: #}
+{# http://www.webhook.com/docs/template-rules-and-filters/ #}
+{# ------------------------------------------------------- #}
+{# Confused what extends and blocks do? Watch a primer: #}
+{# http://www.webhook.com/docs/template-inheritance-blocks/ #}
+{% extends "templates/partials/base.html" %}
+{# This sets our page <title>. It will append this contact's name to the site title defined in base.html #}
+{% block title %}{% parent %} - {{ cms.contact.name }}{% endblock %}
+{% block content %}
+  <h1>{{ cms.contact.name }}</h1>
+<div class="row">
+    <div class="col-md-9">
+        <form>
+            {% for question in cms.contactform.questions %}
+            {% if question.form_type == 'area' %}
+            <div class="form-group">
+                <label for="{{question.type}}">{{question.label}}</label>
+                <textarea rows="7" type="{{question.form_type}}" class="form-control" name="{{question.type}}" id="{{question.type}}" placeholder="{{question.placeholder}}"></textarea>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label for="{{question.type}}">{{question.label}}</label>
+                <input type="{{question.form_type}}" class="form-control" name="{{question.type}}" id="{{question.type}}" placeholder="{{question.placeholder}}">
+            </div>
+            {%endif %}
+
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                Submit!
+            </button>
+        </form>
+
+        <div class="alert alert-danger hidden" role="alert" id="alert">{{cms.contactform.error_message}}</div>
+        <div class="alert alert-success hidden" role="alert" id="success">{{cms.contactform.success_message}}</div>
+
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="contact-information">
+                <ul>
+                    <li>
+                        {{ cms.contact.person.first }} {{ cms.contact.person.last }}
+                    </li>
+                    <li>
+                        <strong>Address: </strong>
+                        <address>
+                            {{ cms.contact.address.street1 }}<br/>
+                            {% if cms.contact.address.street2 %}{{ cms.contact.address.street2 }}<br/>{% endif %}
+                            {{ cms.contact.address.zip }} {{ cms.contact.address.city }}
+                        </address>
+                    </li>
+                    <li>
+                        <strong>Telefoon: </strong>
+                        {{ cms.contact.phone_number }}
+                    </li>
+                    <li>
+                        <strong>Email: </strong>
+                        {{ cms.contact.email }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+{% block scripts_extra %}
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script>
+        var map; //<-- This is now available to both event listeners and the initialize() function
+        function initialize() {
+            var mapOptions = {
+                center: new google.maps.LatLng(40.5472,12.282715),
+                zoom: 6,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map-canvas"),
+                    mapOptions);
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+        google.maps.event.addDomListener(window, "resize", function() {
+        var center = map.getCenter();
+        google.maps.event.trigger(map, "resize");
+        map.setCenter(center);
+        });
+    </script>
+    <script src="/static"
+{% endblock %}
